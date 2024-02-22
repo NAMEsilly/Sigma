@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Simple Platformer</title>
+  <style>
+    canvas {
+      border: 1px solid black;
+      display: block;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="gameCanvas" width="800" height="600"></canvas>
+
+<script>
+  // Initialize canvas
+  var canvas = document.getElementById("gameCanvas");
+  var ctx = canvas.getContext("2d");
+
+  // Define player properties
+  var player = {
+    x: 50,
+    y: canvas.height - 50,
+    width: 50,
+    height: 50,
+    speed: 5,
+    jumpPower: 10,
+    isJumping: false,
+    velocityY: 0,
+    grounded: false
+  };
+
+  // Define platform properties
+  var platform = {
+    x: 0,
+    y: canvas.height - 30,
+    width: canvas.width,
+    height: 30
+  };
+
+  // Event listener for keyboard input
+  document.addEventListener("keydown", keyDownHandler, false);
+  document.addEventListener("keyup", keyUpHandler, false);
+
+  function keyDownHandler(e) {
+    if (e.key == "Right" || e.key == "ArrowRight") {
+      // Move right
+      player.speed = 5;
+    } else if (e.key == "Left" || e.key == "ArrowLeft") {
+      // Move left
+      player.speed = -5;
+    } else if ((e.key == "Up" || e.key == "ArrowUp") && player.grounded) {
+      // Jump if grounded
+      player.velocityY = -player.jumpPower * 2;
+      player.isJumping = true;
+      player.grounded = false;
+    }
+  }
+
+  function keyUpHandler(e) {
+    if (
+      e.key == "Right" ||
+      e.key == "ArrowRight" ||
+      e.key == "Left" ||
+      e.key == "ArrowLeft"
+    ) {
+      // Stop horizontal movement
+      player.speed = 0;
+    }
+  }
+
+  // Update game state
+  function update() {
+    // Move player horizontally
+    player.x += player.speed;
+
+    // Apply gravity to the player
+    player.velocityY += 0.5; // Gravity
+    player.y += player.velocityY;
+    player.grounded = false;
+
+    // Collision detection with platform
+    if (
+      player.x < platform.x + platform.width &&
+      player.x + player.width > platform.x &&
+      player.y < platform.y + platform.height &&
+      player.y + player.height > platform.y
+    ) {
+      // Collision with platform
+      player.y = platform.y - player.height;
+      player.velocityY = 0;
+      player.isJumping = false;
+      player.grounded = true;
+    }
+
+    // Prevent player from going out of bounds
+    if (player.x < 0) {
+      player.x = 0;
+    } else if (player.x + player.width > canvas.width) {
+      player.x = canvas.width - player.width;
+    }
+
+    // Draw everything
+    draw();
+  }
+
+  // Draw objects on canvas
+  function draw() {
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw player
+    ctx.beginPath();
+    ctx.rect(player.x, player.y, player.width, player.height);
+    ctx.fillStyle = "#0095DD";
+    ctx.fill();
+    ctx.closePath();
+
+    // Draw platform
+    ctx.beginPath();
+    ctx.rect(platform.x, platform.y, platform.width, platform.height);
+    ctx.fillStyle = "#0095DD";
+    ctx.fill();
+    ctx.closePath();
+  }
+
+  // Main game loop
+  function gameLoop() {
+    update();
+    requestAnimationFrame(gameLoop);
+  }
+
+  // Start the game loop
+  gameLoop();
+</script>
+
+</body>
+</html>
